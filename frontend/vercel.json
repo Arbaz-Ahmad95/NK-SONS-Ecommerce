@@ -6,22 +6,10 @@
       "use": "@vercel/static-build"
     }
   ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/public/index.html"
-    }
-  ],
   "routes": [
     {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/public/index.html"
+      "dest": "/index.html"
     }
-  ],
-  "static": {
-    "directory": "public"
-  }
+  ]
 }
