@@ -34,31 +34,20 @@ main()
     console.error("DB Connection Error:", err);
   });
 
-// Image Storage Engine
-const storage = multer.diskStorage({
-  destination: './upload/images',
-  filename: (req, file, cb) => {
-    return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
-  }
-});
+// Image Storage Engine for multer (use memory storage for Vercel serverless)
+const storage = multer.memoryStorage(); // Use memory storage for Vercel serverless (No filesystem access)
 const upload = multer({ storage: storage });
 
-// Serve uploaded images
-app.use('/images', express.static('upload/images'));
-
-// Routes
-app.get("/", (req, res) => {
-  res.send("Express app is running");
-});
-
+// Serve uploaded images via the API
 app.post("/upload", upload.single('product'), (req, res) => {
+  // In a production environment, you would upload this to a cloud storage like S3
   res.json({
     success: 1,
     image_url: `http://localhost:${port}/images/${req.file.filename}`
   });
 });
 
-// Schemas and Models
+// Models (Product, User, etc.)
 const Product = mongoose.model("Product", {
   id: { type: Number, required: true },
   name: { type: String, required: true },
@@ -77,6 +66,8 @@ const Users = mongoose.model('Users', {
   cartData: { type: Object },
   date: { type: Date, default: Date.now },
 });
+
+// Routes
 
 // Add Product
 app.post('/addproduct', async (req, res) => {
@@ -181,3 +172,10 @@ app.post('/getcart', fetchUser, async (req, res) => {
   const userData = await Users.findOne({ _id: req.user.id });
   res.json(userData.cartData);
 });
+
+// Catch-all handler for unexpected errors
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).send("Something went wrong!");
+});
+
